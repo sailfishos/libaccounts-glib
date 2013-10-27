@@ -1,0 +1,3 @@
+[submodule "libaccounts-glib"]
+	path = libaccounts-glib
+	url = https://code.google.com/p/accounts-sso.libaccounts-glib/

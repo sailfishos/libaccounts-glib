@@ -1,0 +1,68 @@
+* Wed Oct 02 2013 John Brooks <john.brooks@jollamobile.com> - 1.12
+- Update to upstream version 1.12
+
+* Wed Mar 13 2013 Martin Kampas <martin.kampas@tieto.com> - 1.6
+- MER#682 - libaccounts-glib-1.6.tar.gz contains a tests.xml but no -tests package
+- Add libaccounts-glib-1.6-install-tests.patch
+
+* Wed Feb 6 2013 Valerio Valerio <valerio.valerio@jollamobile.com> - 1.6
+- Update to upstream version 1.6
+
+* Tue Dec 04 2012 Valerio Valerio <valerio.valerio@jollamobile.com> - 1.3
+- Export providers/services environment variables before configure step.
+
+* Thu Aug 23 2012 Bernd Wachter <bernd.wachter@jollamobile.com> - 1.3
+- Update to latest upstream version
+- Switch to google-code upstream
+
+* Tue May 29 2012 Bernd Wachter <bwachter@lart.info> - 1.2
+- Update version
+- Disable building docs (gtk-doc dependency)
+
+* Wed Jul 13 2011 Ulf Hofemeier <ulf.hofemeier@linux.intel.com> - 0.64.3
+- Add CFLAG to Makefile.am for no-unused-but-set-variable
+
+* Fri Feb 11 2011 Bart Cerneels <bart.cerneels@collabora.co.uk> - 0.64.3
+- Update to latest upstream version.
+  + API: Method needed for getting provider icon
+  + Addresses: Configured accounts are cleared/disappear after taking backup
+  + Bugfix: accountListEnabled and accountList doesnot return the expected size
+  + Add ag-tool command, thanks to Aparna Nand <aparna.nand@wipro.com>
+  + API: ag_manager_list_enabled returning disabled accounts.
+
+* Mon Dec 02 2010 Dominic Velikakath <dominic.velikakath@nokia.com> - 0.61
+- Update to 0.61 (BMC#10867)
+- BMC#10569 - Code comment - NULL check not present in ag-manager.c code
+- Bugfix: QMailAccount fields sometimes stored in accounts.db with incorrect service id of 0.
+- Bugfix: Configured accounts are cleared/disappear after taking backup
+- Changes for handling portability issues between 32/64 architectures 
+  (Changes to use precision ‘int’, as ‘long unsigned int’ is used on x86_64 and
+   Changes to use G_ macros instead of %ll[ud] specifiers as they are not portable between 32/64 bit architectures.)
+
+* Mon Oct 25 2010 Alberto Mardegan <mardy@sourceforge.net> - 0.58
+- Update to 0.58
+- Do not export internal symbols
+- Reduce DB accesses for changes coming from another instance
+- Bugfix: ag_account_list_enabled_services() returns more results
+  than it should.
+
+* Tue Sep 28 2010 Fathi Boudra <fathi.boudra@nokia.com> - 0.52
+- Set libaccounts-glib environment variables
+  (AG_SERVICES, AG_SERVICE_TYPES and AG_PROVIDERS) (BMC#7518)
+
+* Wed Sep 15 2010 Fathi Boudra <fathi.boudra@nokia.com> - 0.52
+- Update to 0.52 (BMC#7258)
+- Add libaccounts-glib-tests package
+- Clean up packaging
+
+* Mon Aug 02 2010 Bernd Wachter <ext-bernd.wachter@nokia.com> - 0.45
+- Update to latest upstream version
+
+* Mon Jun 14 2010 Bernd Wachter <ext-bernd.wachter@nokia.com> - 0.39
+- Update to latest version
+
+* Fri Apr 23 2010 Bernd Wachter <ext-bernd.wachter@nokia.com> - 0.34
+- Updated to 0.34
+
+* Wed Feb 03 2010 Helio Castro <helio@kde.org> - 0.26-1
+- First release on top of fedora 12

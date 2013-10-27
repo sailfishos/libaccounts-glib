@@ -1,0 +1,385 @@
+From 13b390ef6025001c494eb37931f50254fcebbaf5 Mon Sep 17 00:00:00 2001
+From: John Brooks <john.brooks@jollamobile.com>
+Date: Mon, 28 Oct 2013 04:20:26 -0600
+Subject: [PATCH 3/5] Revert "Removed deprecated g_type_init"
+
+This reverts commit 79adb86b76016a431352569b065c574a61542350.
+---
+ tests/check_ag.c     |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test-process.c |    2 ++
+ tools/main.c         |    2 ++
+ 3 files changed, 71 insertions(+)
+
+diff --git a/tests/check_ag.c b/tests/check_ag.c
+index 7014626..7507906 100644
+--- a/tests/check_ag.c
++++ b/tests/check_ag.c
+@@ -161,6 +161,7 @@ end_test ()
+ 
+ START_TEST(test_init)
+ {
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     fail_unless (AG_IS_MANAGER (manager),
+@@ -172,6 +173,7 @@ END_TEST
+ 
+ START_TEST(test_object)
+ {
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     account = ag_manager_create_account (manager, NULL);
+@@ -252,6 +254,7 @@ START_TEST(test_provider)
+     gboolean single_account;
+     gboolean found;
+ 
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     account = ag_manager_create_account (manager, PROVIDER);
+@@ -331,6 +334,7 @@ START_TEST(test_provider_settings)
+     AgProvider *provider;
+     GVariant *variant;
+ 
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     account = ag_manager_create_account (manager, "MyProvider");
+@@ -370,6 +374,7 @@ void account_store_cb (AgAccount *account, const GError *error,
+ 
+ START_TEST(test_store)
+ {
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     account = ag_manager_create_account (manager, PROVIDER);
+@@ -415,6 +420,7 @@ START_TEST(test_store_locked)
+ {
+     sqlite3 *db;
+ 
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     account = ag_manager_create_account (manager, PROVIDER);
+@@ -477,6 +483,7 @@ START_TEST(test_store_locked_cancel)
+     GCancellable *cancellable;
+     gboolean cb_called = FALSE;
+ 
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     account = ag_manager_create_account (manager, PROVIDER);
+@@ -520,6 +527,8 @@ START_TEST(test_account_service)
+     AgSettingSource source;
+     AgAccountService *account_service;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -606,6 +615,8 @@ START_TEST(test_account_service_enabledness)
+     gboolean service_enabled = FALSE;
+     GError *error = NULL;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -741,6 +752,8 @@ START_TEST(test_account_service_settings)
+     gchar **changed_fields = NULL;
+     gint known_keys_count, total_keys_count;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -919,6 +932,8 @@ START_TEST(test_account_service_list)
+     /* delete the database */
+     g_unlink (db_filename);
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+ 
+     /* create a few accounts */
+@@ -1117,6 +1132,8 @@ START_TEST(test_auth_data)
+     /* delete the database */
+     g_unlink (db_filename);
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+ 
+     key_prefix = g_strdup_printf ("auth/%s/%s", method, mechanism);
+@@ -1220,6 +1237,8 @@ START_TEST(test_auth_data_get_login_parameters)
+     const gchar *display = "desktop";
+     const gchar *animal = "cat";
+ 
++    g_type_init ();
++
+     manager = ag_manager_new_for_service_type ("e-mail");
+ 
+     /* first, check the default parameters on a non-stored account */
+@@ -1299,6 +1318,8 @@ START_TEST(test_auth_data_insert_parameters)
+     const gchar *display = "desktop";
+     const gchar *animal = "cat";
+ 
++    g_type_init ();
++
+     manager = ag_manager_new_for_service_type ("e-mail");
+ 
+     /* reload the account and get the AccountService */
+@@ -1349,6 +1370,8 @@ START_TEST(test_application)
+     GList *list;
+     gint i;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+ 
+     application = ag_manager_get_application (manager, "Mailer");
+@@ -1435,6 +1458,8 @@ START_TEST(test_service)
+     AgSettingSource source;
+     GError *error = NULL;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -1692,6 +1717,7 @@ START_TEST(test_account_services)
+     GList *services;
+     AgService *service;
+ 
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     account = ag_manager_create_account (manager, "maemo");
+@@ -1741,6 +1767,8 @@ START_TEST(test_signals)
+     gboolean notify_display_name_called = FALSE;
+     gboolean enabled = FALSE;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -1849,6 +1877,8 @@ START_TEST(test_list)
+     AgSettingSource source;
+     GList *list;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -1952,6 +1982,8 @@ START_TEST(test_settings_iter_gvalue)
+     gint i, n_values, n_read;
+     const gint new_port_value = 432412;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -2119,6 +2151,8 @@ START_TEST(test_settings_iter)
+     gint i, n_values, n_read;
+     const gint new_port_value = 32412;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -2264,6 +2298,8 @@ START_TEST(test_list_services)
+     AgService *service;
+     const gchar *name;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+ 
+     /* get all services */
+@@ -2309,6 +2345,7 @@ START_TEST(test_list_service_types)
+     AgServiceType *service_type;
+     const gchar *name, *tag;
+ 
++    g_type_init ();
+     manager = ag_manager_new ();
+ 
+     service_types = ag_manager_list_service_types (manager);
+@@ -2352,6 +2389,8 @@ START_TEST(test_delete)
+     AgAccountId id;
+     gboolean enabled_called, deleted_called;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+ 
+     /* create an account */
+@@ -2433,6 +2472,8 @@ START_TEST(test_watches)
+     AgAccountWatch w_server, w_port, w_dir;
+     GValue value = { 0 };
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -2573,6 +2614,8 @@ START_TEST(test_concurrency)
+         NULL
+     };
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+ 
+     g_signal_connect (manager, "account-created",
+@@ -2781,6 +2824,8 @@ START_TEST(test_service_regression)
+      * reproducible only when the service was not yet in DB */
+     g_unlink (db_filename);
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -2877,6 +2922,8 @@ START_TEST(test_blocking)
+     gint fd;
+     gint ret;
+ 
++    g_type_init ();
++
+     /* create an account */
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+@@ -2958,6 +3005,8 @@ START_TEST(test_cache_regression)
+     /* delete the database */
+     g_unlink (db_filename);
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, provider1);
+     fail_unless (account != NULL);
+@@ -3021,6 +3070,8 @@ START_TEST(test_serviceid_regression)
+     /* delete the database */
+     g_unlink (db_filename);
+ 
++    g_type_init ();
++
+     manager1 = ag_manager_new ();
+     manager2 = ag_manager_new ();
+ 
+@@ -3066,6 +3117,8 @@ START_TEST(test_enabled_regression)
+ {
+     EnabledCbData ecd;
+ 
++    g_type_init();
++
+     manager = ag_manager_new ();
+     account = ag_manager_create_account (manager, PROVIDER);
+ 
+@@ -3101,6 +3154,8 @@ START_TEST(test_delete_regression)
+     AgAccountService *account_service;
+     gboolean enabled_called, deleted_called;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new_for_service_type ("e-mail");
+ 
+     /* create an account */
+@@ -3166,6 +3221,8 @@ START_TEST(test_duplicate_create_regression)
+ {
+     gint create_signal_counter;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+ 
+     g_signal_connect (manager, "account-created",
+@@ -3212,6 +3269,8 @@ START_TEST(test_manager_new_for_service_type)
+     /* delete the database */
+     g_unlink (db_filename);
+ 
++    g_type_init ();
++
+     manager = ag_manager_new_for_service_type ("e-mail");
+     fail_unless (g_strcmp0 (ag_manager_get_service_type (manager),
+                          "e-mail") == 0);
+@@ -3294,6 +3353,8 @@ START_TEST(test_manager_enabled_event)
+ {
+     gint ret;
+ 
++    g_type_init();
++
+     /* consume any still unprocessed D-Bus signals */
+     run_main_loop_for_n_seconds (2);
+ 
+@@ -3359,6 +3420,7 @@ START_TEST(test_list_enabled_account)
+     AgAccount *account3 = NULL;
+     const gchar *name = NULL;
+ 
++    g_type_init ();
+     manager = ag_manager_new ();
+     fail_unless (manager != NULL, "Manager should not be NULL");
+ 
+@@ -3436,6 +3498,8 @@ START_TEST(test_account_list_enabled_services)
+      * */
+     AgAccount *account4;
+ 
++    g_type_init ();
++
+     /* delete the database */
+     g_unlink (db_filename);
+ 
+@@ -3540,6 +3604,8 @@ START_TEST(test_service_type)
+     const gchar *string;
+     AgServiceType *service_type;
+ 
++    g_type_init ();
++
+     manager = ag_manager_new ();
+ 
+     service_type = ag_manager_load_service_type (manager, "I don't exist");
+@@ -3618,6 +3684,7 @@ START_TEST(test_db_access)
+      *   account-created signal and call
+      *   ag_account_list_enabled_services(), we shouldn't be blocked.
+      */
++    g_type_init ();
+ 
+     /* first, create a lock file to synchronize the test */
+     lock_filename = "/tmp/check_ag.lock";
+diff --git a/tests/test-process.c b/tests/test-process.c
+index 53102ec..a98bb1c 100644
+--- a/tests/test-process.c
++++ b/tests/test-process.c
+@@ -372,6 +372,8 @@ int main(int argc, char **argv)
+ {
+     TestArgs args;
+ 
++    g_type_init ();
++
+     if (argc >= 2)
+     {
+         const gchar *test_name = argv[1];
+diff --git a/tools/main.c b/tools/main.c
+index bfa524f..0245798 100644
+--- a/tools/main.c
++++ b/tools/main.c
+@@ -1268,6 +1268,8 @@ parse (int argc, char **argv)
+ gint
+ main (int argc, char **argv)
+ {
++    g_type_init ();
++
+     gl_app_name = g_path_get_basename (argv[0]);
+ 
+     if (argc < 2)
+-- 
+1.7.9.5
+
