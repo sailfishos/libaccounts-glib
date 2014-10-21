@@ -9,6 +9,7 @@ Source:         %{name}-%{version}.tar.gz
 Patch0:         0001-Remove-gtk-doc-dependency-for-disable-gtk-doc.patch
 Patch1:         0002-Fix-compilation-error.patch
 Patch2:         0003-Remove-use-of-function-only-available-in-check-0.9.1.patch
+Patch3:         0004-Add-test-directory-path-for-test-script.patch
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(dbus-glib-1)
@@ -55,6 +56,7 @@ This package contains tests for %{name}.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %build
 export SERVICE_FILES_DIR=/usr/share/accounts/services
