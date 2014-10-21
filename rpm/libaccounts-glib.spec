@@ -46,6 +46,7 @@ from the command line.
 Summary:        Tests for %{name}
 Group:          System/X11
 Requires:       %{name} = %{version}-%{release}
+Requires:       libtool
 
 %description tests
 This package contains tests for %{name}.
