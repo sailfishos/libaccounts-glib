@@ -1,5 +1,5 @@
 Name:           libaccounts-glib
-Version:        1.14
+Version:        1.18
 Release:        1
 License:        LGPLv2.1
 Summary:        Accounts base library
