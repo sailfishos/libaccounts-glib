@@ -3,7 +3,7 @@ Version:        1.18
 Release:        1
 License:        LGPLv2.1
 Summary:        Accounts base library
-URL:            https://code.google.com/p/accounts-sso.libaccounts-glib/
+URL:            https://gitlab.com/accounts-sso/libaccounts-glib
 Group:          System/Libraries
 Source:         %{name}-%{version}.tar.gz
 Patch0:         0001-Remove-gtk-doc-dependency-for-disable-gtk-doc.patch
