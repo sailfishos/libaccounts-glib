@@ -7,6 +7,7 @@ URL:            https://gitlab.com/accounts-sso/libaccounts-glib
 Group:          System/Libraries
 Source:         %{name}-%{version}.tar.gz
 Patch0:         0001-Remove-gtk-doc-dependency-for-disable-gtk-doc.patch
+Patch1:         0002-Allow-deprecation-warnings.patch
 Patch2:         0003-Remove-use-of-function-only-available-in-check-0.9.1.patch
 Patch3:         0004-Add-test-directory-path-for-test-script.patch
 Patch4:         0005-Remove-usages-of-ck_assert_uint_eq-from-unit-test.patch
@@ -55,6 +56,7 @@ This package contains tests for %{name}.
 %prep
 %setup -q -n %{name}-%{version}/libaccounts-glib
 %patch0 -p1
+%patch1 -p1
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
