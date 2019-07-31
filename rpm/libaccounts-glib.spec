@@ -1,7 +1,7 @@
 Name:           libaccounts-glib
 Version:        1.18
 Release:        1
-License:        LGPLv2.1
+License:        LGPLv2
 Summary:        Accounts base library
 URL:            https://gitlab.com/accounts-sso/libaccounts-glib
 Group:          System/Libraries
@@ -84,6 +84,7 @@ rm  %{buildroot}%{_datadir}/dbus-1/interfaces/com.google.code.AccountsSSO.Accoun
 %{_libdir}/libaccounts-glib.so.*
 %{_datadir}/backup-framework/applications/accounts.conf
 %{_datadir}/xml/accounts/schema/*
+%license COPYING
 
 %files devel
 %defattr(-,root,root,-)
