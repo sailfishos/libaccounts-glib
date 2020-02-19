@@ -11,6 +11,7 @@ Patch1:         0002-Allow-deprecation-warnings.patch
 Patch2:         0003-Remove-use-of-function-only-available-in-check-0.9.1.patch
 Patch3:         0004-Add-test-directory-path-for-test-script.patch
 Patch4:         0005-Remove-usages-of-ck_assert_uint_eq-from-unit-test.patch
+Patch5:         0006-Added-required-group-provider-element.patch
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(dbus-glib-1)
@@ -60,6 +61,7 @@ This package contains tests for %{name}.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 
 %build
 export SERVICE_FILES_DIR=/usr/share/accounts/services
