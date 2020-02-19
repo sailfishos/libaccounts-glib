@@ -1,0 +1,56 @@
+From 646fc61a1a477bf52a7e668e48167752b3690bd4 Mon Sep 17 00:00:00 2001
+From: Marko Kenttala <marko.kenttala@jolla.com>
+Date: Wed, 26 Feb 2020 16:45:51 +0200
+Subject: [PATCH] Compatibility patch for check-0.9.8
+
+---
+ tests/check_ag.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/tests/check_ag.c b/tests/check_ag.c
+index c78b7ee..49e64e8 100644
+--- a/tests/check_ag.c
++++ b/tests/check_ag.c
+@@ -232,14 +232,14 @@ START_TEST(test_timeout_properties)
+ 
+     ck_assert (!abort_on_db_timeout);
+     ck_assert (!ag_manager_get_abort_on_db_timeout (manager));
+-    ck_assert_uint_eq (db_timeout, ag_manager_get_db_timeout (manager));
++    ck_assert (db_timeout == ag_manager_get_db_timeout (manager));
+ 
+     g_object_set (manager,
+                   "db-timeout", 120,
+                   "abort_on_db_timeout", TRUE,
+                   NULL);
+     ck_assert (ag_manager_get_abort_on_db_timeout (manager));
+-    ck_assert_uint_eq (ag_manager_get_db_timeout (manager), 120);
++    ck_assert (ag_manager_get_db_timeout (manager) == 120);
+ 
+     end_test ();
+ }
+@@ -707,11 +707,11 @@ START_TEST(test_store_read_only)
+     ck_assert (store_data.called);
+     ck_assert (store_data.created);
+     ck_assert (!store_data.deleted);
+-    ck_assert_uint_eq (store_data.account_id, 0);
++    ck_assert (store_data.account_id == 0);
+     ck_assert_str_eq (store_data.provider, "fakebook");
+     store_cb_data_unset (&store_data);
+ 
+-    ck_assert_uint_eq (account->id, expected_id);
++    ck_assert (account->id == expected_id);
+     const char *name = ag_account_get_display_name (account);
+     ck_assert (name != NULL);
+     ck_assert_str_eq (name, display_name);
+@@ -1782,7 +1782,7 @@ START_TEST(test_service)
+     ag_account_set_display_name (account, display_name);
+ 
+     ag_account_select_service (account, service);
+-    ck_assert_ptr_eq (ag_account_get_selected_service (account), service);
++    ck_assert (ag_account_get_selected_service (account) == service);
+ 
+     /* test getting default setting from template */
+     g_value_init (&value, G_TYPE_INT);
+-- 
+2.17.1
+

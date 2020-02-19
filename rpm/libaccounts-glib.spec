@@ -6,11 +6,7 @@ Summary:        Accounts base library
 URL:            https://gitlab.com/accounts-sso/libaccounts-glib
 Group:          System/Libraries
 Source:         %{name}-%{version}.tar.gz
-Patch0:         0001-Remove-gtk-doc-dependency-for-disable-gtk-doc.patch
-Patch1:         0002-Allow-deprecation-warnings.patch
-Patch2:         0003-Remove-use-of-function-only-available-in-check-0.9.1.patch
-Patch3:         0004-Add-test-directory-path-for-test-script.patch
-Patch4:         0005-Remove-usages-of-ck_assert_uint_eq-from-unit-test.patch
+Patch0:         0001-Compatibility-patch-for-check-0.9.8.patch
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(dbus-glib-1)
@@ -20,7 +16,12 @@ BuildRequires:  pkgconfig(gio-unix-2.0)
 BuildRequires:  pkgconfig(gobject-2.0)
 BuildRequires:  pkgconfig(libxml-2.0)
 BuildRequires:  pkgconfig(sqlite3) >= 3.7.0
+BuildRequires:  pkgconfig(gobject-introspection-1.0)
 BuildRequires:  libtool
+BuildRequires:  meson
+BuildRequires:  vala-tools
+BuildRequires:  python3-gobject
+BuildRequires:  ninja
 
 %description
 %{summary}.
@@ -56,25 +57,23 @@ This package contains tests for %{name}.
 %prep
 %setup -q -n %{name}-%{version}/libaccounts-glib
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
+# Drop docs
+sed -i '/docs/d' meson.build
+meson setup --prefix /usr -Dpy-overrides-dir=%{buildroot} . build
 
 %build
-export SERVICE_FILES_DIR=/usr/share/accounts/services
-export SERVICE_TYPE_FILES_DIR=/usr/share/accounts/service-types 
-export PROVIDER_FILES_DIR=/usr/share/accounts/providers 
-%autogen --disable-static \
-         --disable-gtk-doc \
-         --disable-man \
-         --with-testdir=/opt/tests/libaccounts-glib \
-         --with-testdatadir=/opt/tests/libaccounts-glib/data
-make %{?_smp_mflags}
+cd build
+ninja
 
 %install
-%make_install
-rm  %{buildroot}%{_datadir}/dbus-1/interfaces/com.google.code.AccountsSSO.Accounts.Manager.xml
+cd build
+DESTDIR=%{buildroot} ninja install
+rm -r %{buildroot}/home
+rm -r %{buildroot}%{_libdir}/girepository-1.0
+rm -r %{buildroot}%{_datadir}/dbus-1
+rm -r %{buildroot}%{_datadir}/gettext
+rm -r %{buildroot}%{_datadir}/gir-1.0
+
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -82,7 +81,6 @@ rm  %{buildroot}%{_datadir}/dbus-1/interfaces/com.google.code.AccountsSSO.Accoun
 %files
 %defattr(-,root,root,-)
 %{_libdir}/libaccounts-glib.so.*
-%{_datadir}/backup-framework/applications/accounts.conf
 %{_datadir}/xml/accounts/schema/*
 %license COPYING
 
@@ -97,7 +95,3 @@ rm  %{buildroot}%{_datadir}/dbus-1/interfaces/com.google.code.AccountsSSO.Accoun
 %defattr(-,root,root,-)
 %{_bindir}/ag-tool
 %{_bindir}/ag-backup
-
-%files tests
-%defattr(-,root,root,-)
-/opt/tests/%{name}
