@@ -36,7 +36,7 @@
   + Add ag-tool command, thanks to Aparna Nand <aparna.nand@wipro.com>
   + API: ag_manager_list_enabled returning disabled accounts.
 
-* Mon Dec 02 2010 Dominic Velikakath <dominic.velikakath@nokia.com> - 0.61
+* Thu Dec 02 2010 Dominic Velikakath <dominic.velikakath@nokia.com> - 0.61
 - Update to 0.61 (BMC#10867)
 - BMC#10569 - Code comment - NULL check not present in ag-manager.c code
 - Bugfix: QMailAccount fields sometimes stored in accounts.db with incorrect service id of 0.
