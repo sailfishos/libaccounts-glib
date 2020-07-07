@@ -7,6 +7,7 @@ URL:            https://gitlab.com/accounts-sso/libaccounts-glib
 Source:         %{name}-%{version}.tar.gz
 Patch0:         0001-Compatibility-patch-for-check-0.9.8.patch
 Patch1:         0002-Disable-docs.patch
+Patch2:         0003-Avoid-assert-failure-on-ag_provider_get_tags.patch
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(dbus-glib-1)
