@@ -1,12 +1,12 @@
 Name:           libaccounts-glib
-Version:        1.18
+Version:        1.24
 Release:        1
 License:        LGPLv2
 Summary:        Accounts base library
 URL:            https://gitlab.com/accounts-sso/libaccounts-glib
-Group:          System/Libraries
 Source:         %{name}-%{version}.tar.gz
 Patch0:         0001-Compatibility-patch-for-check-0.9.8.patch
+Patch1:         0002-Disable-docs.patch
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(dbus-glib-1)
@@ -28,7 +28,6 @@ BuildRequires:  ninja
 
 %package devel
 Summary:        Development files for %{name}
-Group:          Development/Libraries
 Requires:       %{name} = %{version}-%{release}
 Requires:       pkgconfig(glib-2.0)
 
@@ -38,7 +37,6 @@ applications that use %{name}.
 
 %package tools
 Summary:        Tools for %{name}
-Group:          Development/Tools
 Requires:       %{name} = %{version}-%{release}
 
 %description tools
@@ -47,7 +45,6 @@ from the command line.
 
 %package tests
 Summary:        Tests for %{name}
-Group:          System/X11
 Requires:       %{name} = %{version}-%{release}
 Requires:       libtool
 
@@ -55,25 +52,20 @@ Requires:       libtool
 This package contains tests for %{name}.
 
 %prep
-%setup -q -n %{name}-%{version}/libaccounts-glib
-%patch0 -p1
-# Drop docs
-sed -i '/docs/d' meson.build
-meson setup --prefix /usr -Dpy-overrides-dir=%{buildroot} . build
+%autosetup -p1 -n %{name}-%{version}/libaccounts-glib
 
 %build
-cd build
-ninja
+# not needing the python stuff
+%meson -Dpy-overrides-dir=/usr/removeme
+%meson_build
 
 %install
-cd build
-DESTDIR=%{buildroot} ninja install
-rm -r %{buildroot}/home
+%meson_install
+rm -r %{buildroot}/usr/removeme
 rm -r %{buildroot}%{_libdir}/girepository-1.0
 rm -r %{buildroot}%{_datadir}/dbus-1
 rm -r %{buildroot}%{_datadir}/gettext
 rm -r %{buildroot}%{_datadir}/gir-1.0
-
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
