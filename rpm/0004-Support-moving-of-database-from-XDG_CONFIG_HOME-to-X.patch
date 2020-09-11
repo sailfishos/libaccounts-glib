@@ -1,0 +1,277 @@
+From 5e0a313d792567215a69c6c497972444fa692940 Mon Sep 17 00:00:00 2001
+From: David Llewellyn-Jones <david.llewellyn-jones@jolla.com>
+Date: Tue, 24 Mar 2020 11:50:32 +0000
+Subject: [PATCH] Support moving of database from $XDG_CONFIG_HOME to
+ $XDG_DATA_HOME
+
+Provides additional configuration options to allow the accounts database
+to be stored in different places, specifically in $XDG_DATA_HOME instead
+of $XDG_CONFIG_HOME.
+
+The new meson options are:
+
+1. database-dir: directory for storing database (in $XDG_CONFIG_HOME)
+2. database-base-dir: provide a fixed database base directory
+   [default=$XDG_CONFIG_HOME]
+3. enable-datadir: use $XDG_DATA_HOME instead of $XDG_CONFIG_HOME
+4. privileged-dir: the subdir of database-base-dir to test the access
+   control permissions of before proceeding. The check is skipped if
+   this is omitted.
+
+The privilege check is intended to ensure the access control flags and
+groups settings are strict enough to prevent the unpriveleged nemo user
+(or equivalent) from reading data from or writing data to the database.
+---
+ libaccounts-glib/ag-manager.c | 78 ++++++++++++++++++++++++++++++++++-
+ meson.build                   | 18 +++++++-
+ meson_options.txt             |  4 ++
+ tools/backup.c                | 53 ++++++++++++++++++++----
+ 4 files changed, 142 insertions(+), 11 deletions(-)
+
+diff --git a/libaccounts-glib/ag-manager.c b/libaccounts-glib/ag-manager.c
+index 5460b0b..bc3c2c7 100644
+--- a/libaccounts-glib/ag-manager.c
++++ b/libaccounts-glib/ag-manager.c
+@@ -60,6 +60,7 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <unistd.h>
++#include <pwd.h>
+ 
+ #ifndef DATABASE_DIR
+ #define DATABASE_DIR "libaccounts-glib"
+@@ -71,6 +72,15 @@
+ #define JOURNAL_MODE "WAL"
+ #endif
+ 
++#ifdef ENABLE_DATADIR
++#define DATABASE_BASE_DIR g_get_user_data_dir ()
++#else
++#ifndef DATABASE_BASE_DIR
++#define DATABASE_BASE_DIR g_get_user_config_dir ()
++#endif
++#endif
++
++
+ enum
+ {
+     PROP_0,
+@@ -1339,12 +1349,49 @@ file_is_read_only (const gchar *filename)
+     return FALSE;
+ }
+ 
++#ifdef PRIVILEGED_DIR
++static gboolean
++check_privileges (const char *pathname)
++{
++    int result = 0;
++    struct stat filestat;
++    struct passwd * privuser;
++
++    privuser = getpwnam("privileged");
++    if (privuser == NULL)
++    {
++        g_warning ("Privileged user could not be found");
++        return FALSE;
++    }
++    result = stat(pathname, &filestat);
++    if (result != 0)
++    {
++        g_warning ("Could not stat accounts privilege directory");
++        return FALSE;
++    }
++    // Check owner = privileged; group = privileged
++    if ((filestat.st_uid != privuser->pw_uid) || (filestat.st_gid != privuser->pw_gid))
++    {
++        g_warning ("Incorrect ownership on accounts privilege directory");
++        return FALSE;
++    }
++    // Check Other users have no read, write or execute permissions
++    if ((filestat.st_mode & S_IRWXO) != 0)
++    {
++        g_warning ("Permissions too liberal on accounts privilege directory");
++        return FALSE;
++    }
++
++    return TRUE;
++}
++#endif // PRIVILEGED_DIR
++
+ static gboolean
+ open_db (AgManager *manager)
+ {
+     AgManagerPrivate *priv = manager->priv;
+     const gchar *basedir;
+-    gchar *filename, *pathname;
++    gchar *filename, *pathname, *checkpath, *contents, *redirect;
+     gint version;
+     gboolean ok = TRUE;
+     int ret, flags;
+@@ -1352,9 +1399,36 @@ open_db (AgManager *manager)
+     basedir = g_getenv ("ACCOUNTS");
+     if (G_LIKELY (!basedir))
+     {
+-        basedir = g_get_user_config_dir ();
++        basedir = DATABASE_BASE_DIR;
+         pathname = g_build_path (G_DIR_SEPARATOR_S, basedir,
+             DATABASE_DIR, NULL);
++
++#ifdef PRIVILEGED_DIR
++        /* Check privileges on the database file */
++        /* FIXME: There is a (potentially unavoidable) race condition here */
++        checkpath = g_build_path (G_DIR_SEPARATOR_S, basedir, "system/privileged", NULL);
++        ok = check_privileges (checkpath);
++        g_free (checkpath);
++
++        if (G_UNLIKELY (!ok))
++        {
++            return FALSE;
++        }
++#endif // PRIVILEGED_DIR
++
++        // Check for a redirect in the database folder
++        checkpath = g_build_filename (pathname, "accounts.redirect", NULL);
++        if (G_UNLIKELY (g_file_get_contents(checkpath, &contents, NULL, NULL)))
++        {
++            g_strstrip(contents);
++            redirect = g_build_path (G_DIR_SEPARATOR_S, pathname,
++                contents, NULL);
++            g_free (contents);
++            g_free (pathname);
++            pathname = redirect;
++        }
++        g_free (checkpath);
++
+         if (G_UNLIKELY (g_mkdir_with_parents(pathname, 0755)))
+             g_warning ("Cannot create directory: %s", pathname);
+         filename = g_build_filename (pathname, "accounts.db", NULL);
+diff --git a/meson.build b/meson.build
+index c457117..6ef35ef 100644
+--- a/meson.build
++++ b/meson.build
+@@ -18,7 +18,18 @@ application_files_dir = 'accounts/applications'
+ provider_files_dir = 'accounts/providers'
+ service_files_dir = 'accounts/services'
+ service_type_files_dir = 'accounts/service_types'
+-database_dir = 'libaccounts-glib'
++database_dir = get_option('database-dir')
++if database_dir == ''
++    database_dir = 'libaccounts-glib'
++endif
++privileged_dir = get_option('privileged-dir')
++if privileged_dir != ''
++    add_global_arguments('-DPRIVILEGED_DIR="'+ privileged_dir + '"', language : 'c')
++endif
++database_base_dir = get_option('database-base-dir')
++if database_base_dir != ''
++    add_global_arguments('-DDATABASE_BASE_DIR="'+ database_base_dir + '"', language : 'c')
++endif
+ 
+ add_global_arguments('-DAPPLICATION_FILES_DIR="'+ application_files_dir + '"', language : 'c')
+ add_global_arguments('-DPROVIDER_FILES_DIR="'+ provider_files_dir + '"', language : 'c')
+@@ -26,6 +37,11 @@ add_global_arguments('-DSERVICE_FILES_DIR="'+ service_files_dir + '"', language
+ add_global_arguments('-DSERVICE_TYPE_FILES_DIR="'+ service_type_files_dir + '"', language : 'c')
+ add_global_arguments('-DDATABASE_DIR="'+ database_dir + '"', language : 'c')
+ 
++enable_datadir = get_option('enable-datadir')
++if enable_datadir == true
++    add_global_arguments('-DENABLE_DATADIR=1', language : 'c')
++endif
++
+ accounts_glib_library_deps = [glib_dep, gio_dep, gio_unix_dep, gobject_dep, libxml_dep, sqlite_dep]
+ 
+ xmllint = find_program('xmllint', required: false)
+diff --git a/meson_options.txt b/meson_options.txt
+index 2c33804..aaeca28 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -1 +1,5 @@
+ option('py-overrides-dir', type : 'string', value : '', description: 'Path to pygobject overrides directory')
++option('database-dir', type : 'string', value : '', description: 'Directory for storing database (in $XDG_CONFIG_HOME)')
++option('database-base-dir', type : 'string', value : '', description: 'Provide a fixed database base directory [default=$XDG_CONFIG_HOME]')
++option('privileged-dir', type : 'string', value : '', description: 'Directory tested for special permissions (in $XDG_CONFIG_HOME)')
++option('enable-datadir', type : 'boolean', value : false, description: 'Use $XDG_DATA_HOME instead of $XDG_CONFIG_HOME')
+diff --git a/tools/backup.c b/tools/backup.c
+index ad316e4..dfff01d 100644
+--- a/tools/backup.c
++++ b/tools/backup.c
+@@ -29,14 +29,26 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
++#ifndef DATABASE_DIR
++#define DATABASE_DIR "libaccounts-glib"
++#endif
++
++#ifdef ENABLE_DATADIR
++#define DATABASE_BASE_DIR g_get_user_data_dir ()
++#else
++#ifndef DATABASE_BASE_DIR
++#define DATABASE_BASE_DIR g_get_user_config_dir ()
++#endif
++#endif
++
+ static void
+ show_help ()
+ {
+     printf ("\nUsage:\n"
+             "   %1$s\n"
+-            "Backups the accounts from ~/.config/libaccounts-glib/accounts.db\n"
+-            "into ~/.config/libaccounts-glib/accounts.db.bak\n\n",
+-            g_get_prgname());
++            "Backs up the accounts from %2$s/%3$s/accounts.db\n"
++            "into %2$s/%3$s/accounts.db.bak\n\n",
++            g_get_prgname(), DATABASE_BASE_DIR, DATABASE_DIR);
+ }
+ 
+ static gboolean
+@@ -77,16 +89,41 @@ write_backup (sqlite3 *src, const gchar *filename)
+ static gboolean
+ backup ()
+ {
+-    gchar *filename, *filename_bak;
++    const gchar *basedir;
++    gchar *filename, *filename_bak, *pathname, *checkpath, *contents, *redirect;
+     sqlite3 *db;
+     gint n_retries;
+     int ret;
+     gboolean success = FALSE;;
+ 
+-    filename = g_build_filename (g_get_user_config_dir (),
+-                                 DATABASE_DIR,
+-                                 "accounts.db",
+-                                 NULL);
++    basedir = g_getenv ("ACCOUNTS");
++    if (G_LIKELY (!basedir))
++    {
++        basedir = DATABASE_BASE_DIR;
++        pathname = g_build_path (G_DIR_SEPARATOR_S, basedir,
++            DATABASE_DIR, NULL);
++
++        // Check for a redirect in the database folder
++        checkpath = g_build_filename (pathname, "accounts.redirect", NULL);
++        if (G_UNLIKELY (g_file_get_contents(checkpath, &contents, NULL, NULL)))
++        {
++            g_strstrip(contents);
++            redirect = g_build_path (G_DIR_SEPARATOR_S, pathname,
++                contents, NULL);
++            g_free (contents);
++            g_free (pathname);
++            pathname = redirect;
++        }
++        g_free (checkpath);
++
++        filename = g_build_filename (pathname, "accounts.db", NULL);
++        g_free (pathname);
++    }
++    else
++    {
++        filename = g_build_filename (basedir, "accounts.db", NULL);
++    }
++
+     filename_bak = g_strdup_printf ("%s.bak", filename);
+ 
+     g_debug ("Opening %s", filename);
+-- 
+2.25.1
+
