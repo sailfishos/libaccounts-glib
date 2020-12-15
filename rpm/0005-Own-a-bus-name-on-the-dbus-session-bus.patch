@@ -1,0 +1,91 @@
+From c5536524accb1651c08a3b1e56cf48211cf0bd3c Mon Sep 17 00:00:00 2001
+From: David Llewellyn-Jones <david@flypig.co.uk>
+Date: Fri, 11 Dec 2020 15:35:48 +0000
+Subject: [PATCH] Own a bus name on the dbus session bus
+
+Sailjail filters on dbus name prefixes, so in order to allow sandboxed
+process to send/receive the libaccounts-glib signals, the connection has
+to own a name.
+
+This patch claims a bus name of the form:
+
+com.google.code.AccountsSSO.Accounts.uuid_*
+
+where * is replaced by a randomly generated uuid.
+---
+ libaccounts-glib/ag-internals.h |  1 +
+ libaccounts-glib/ag-manager.c   | 32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
+
+diff --git a/libaccounts-glib/ag-internals.h b/libaccounts-glib/ag-internals.h
+index efad38c..5dba0fd 100644
+--- a/libaccounts-glib/ag-internals.h
++++ b/libaccounts-glib/ag-internals.h
+@@ -41,6 +41,7 @@ G_BEGIN_DECLS
+ #define AG_DBUS_PATH_SERVICE "/ServiceType"
+ #define AG_DBUS_IFACE "com.google.code.AccountsSSO.Accounts"
+ #define AG_DBUS_SIG_CHANGED "AccountChanged"
++#define AG_DBUS_BUS_NAME "com.google.code.AccountsSSO.Accounts.uuid_%s"
+ 
+ #define SERVICE_GLOBAL_TYPE "global"
+ #define AG_DBUS_PATH_SERVICE_GLOBAL \
+diff --git a/libaccounts-glib/ag-manager.c b/libaccounts-glib/ag-manager.c
+index bc3c2c7..4786a8c 100644
+--- a/libaccounts-glib/ag-manager.c
++++ b/libaccounts-glib/ag-manager.c
+@@ -148,6 +148,9 @@ struct _AgManagerPrivate {
+     guint is_readonly : 1;
+ 
+     gchar *service_type;
++
++    gchar *dbus_name;
++    guint dbus_id;
+ };
+ 
+ typedef struct {
+@@ -1547,6 +1550,23 @@ setup_dbus (AgManager *manager, GError **error)
+         return FALSE;
+     }
+ 
++    /* claim a dbus name */
++    if (priv->dbus_name == NULL)
++    {
++        /* create a unique bus name with a consistent prefix */
++        gchar *uuid = g_dbus_generate_guid();
++        priv->dbus_name = g_strdup_printf(AG_DBUS_BUS_NAME, uuid);
++        g_free(uuid);
++        DEBUG_INFO ("Claiming dbus name: %s", priv->dbus_name);
++        priv->dbus_id = g_bus_own_name_on_connection (priv->dbus_conn,
++                                                      priv->dbus_name,
++                                                      G_BUS_NAME_OWNER_FLAGS_DO_NOT_QUEUE,
++                                                      NULL,
++                                                      NULL,
++                                                      NULL,
++                                                      NULL);
++    }
++
+     if (priv->service_type == NULL)
+     {
+         /* listen to all changes */
+@@ -1661,6 +1681,18 @@ ag_manager_dispose (GObject *object)
+ 
+     g_list_free_full (g_steal_pointer (&priv->locks), (GDestroyNotify)store_cb_data_free);
+ 
++    if (priv->dbus_id != 0)
++    {
++        g_bus_unown_name(priv->dbus_id);
++        priv->dbus_id = 0;
++    }
++
++    if (priv->dbus_name != NULL)
++    {
++        g_free(priv->dbus_name);
++        priv->dbus_name = NULL;
++    }
++
+     if (priv->dbus_conn)
+     {
+         while (priv->subscription_ids)
+-- 
+2.26.2
+
