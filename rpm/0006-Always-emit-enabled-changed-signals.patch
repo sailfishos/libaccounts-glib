@@ -1,0 +1,27 @@
+From 25a4db79cf5f78f17a39c3ad4db9d3b5ce8bc7d9 Mon Sep 17 00:00:00 2001
+From: Chris Adams <chris.adams@jolla.com>
+Date: Wed, 27 Jan 2021 17:21:59 +1000
+Subject: [PATCH] Always emit enabled-changed signals
+
+Don't emit only if a service type filter is specified.
+---
+ libaccounts-glib/ag-manager.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/libaccounts-glib/ag-manager.c b/libaccounts-glib/ag-manager.c
+index 4786a8c..b2d75a0 100644
+--- a/libaccounts-glib/ag-manager.c
++++ b/libaccounts-glib/ag-manager.c
+@@ -595,8 +595,7 @@ ag_manager_must_emit_enabled (AgManager *manager, AgAccountChanges *changes)
+     /* TODO: the enabled-event is emitted whenever enabled status has changed on
+      * any service or account. This has some possibility for optimization.
+      */
+-    return (priv->service_type != NULL) ?
+-        _ag_account_changes_have_enabled (changes) : FALSE;
++    return _ag_account_changes_have_enabled (changes);
+ }
+ 
+ static void
+-- 
+2.17.1
+

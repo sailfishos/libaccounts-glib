@@ -11,6 +11,7 @@ Patch1:         0002-Disable-docs.patch
 Patch2:         0003-Avoid-assert-failure-on-ag_provider_get_tags.patch
 Patch3:         0004-Support-moving-of-database-from-XDG_CONFIG_HOME-to-X.patch
 Patch4:         0005-Own-a-bus-name-on-the-dbus-session-bus.patch
+Patch5:         0006-Always-emit-enabled-changed-signals.patch
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(dbus-glib-1)
