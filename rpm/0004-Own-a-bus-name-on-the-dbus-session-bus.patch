@@ -1,4 +1,4 @@
-From c5536524accb1651c08a3b1e56cf48211cf0bd3c Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: David Llewellyn-Jones <david@flypig.co.uk>
 Date: Fri, 11 Dec 2020 15:35:48 +0000
 Subject: [PATCH] Own a bus name on the dbus session bus
@@ -30,7 +30,7 @@ index efad38c..5dba0fd 100644
  #define SERVICE_GLOBAL_TYPE "global"
  #define AG_DBUS_PATH_SERVICE_GLOBAL \
 diff --git a/libaccounts-glib/ag-manager.c b/libaccounts-glib/ag-manager.c
-index bc3c2c7..4786a8c 100644
+index 11ae7aa..a28a497 100644
 --- a/libaccounts-glib/ag-manager.c
 +++ b/libaccounts-glib/ag-manager.c
 @@ -148,6 +148,9 @@ struct _AgManagerPrivate {
@@ -86,6 +86,3 @@ index bc3c2c7..4786a8c 100644
      if (priv->dbus_conn)
      {
          while (priv->subscription_ids)
--- 
-2.26.2
-
