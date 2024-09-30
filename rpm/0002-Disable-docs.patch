@@ -1,4 +1,4 @@
-From 43bf52d573ea2e30e5195113075a26835043b633 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Pekka Vuorela <pekka.vuorela@jolla.com>
 Date: Tue, 7 Jul 2020 11:14:02 +0300
 Subject: [PATCH] Disable docs
@@ -8,15 +8,12 @@ Subject: [PATCH] Disable docs
  1 file changed, 1 deletion(-)
 
 diff --git a/meson.build b/meson.build
-index 999c679..c457117 100644
+index e0ca7fa..0f27b27 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -35,5 +35,4 @@ root_dir = include_directories('.')
+@@ -36,5 +36,4 @@ root_dir = include_directories('.')
  subdir('libaccounts-glib')
  subdir('tools')
  subdir('data')
 -subdir('docs')
  subdir('tests')
--- 
-2.26.2
-

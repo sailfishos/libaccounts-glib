@@ -1,16 +1,16 @@
-Name:           libaccounts-glib
-Version:        1.24
-Release:        1
-License:        LGPLv2
-Summary:        Accounts base library
-URL:            https://gitlab.com/accounts-sso/libaccounts-glib
-Source0:        %{name}-%{version}.tar.gz
-Source1:        move_accounts_db_to_privileged
-Patch0:         0001-Compatibility-patch-for-check-0.9.8.patch
-Patch1:         0002-Disable-docs.patch
-Patch2:         0003-Avoid-assert-failure-on-ag_provider_get_tags.patch
-Patch3:         0004-Support-moving-of-database-from-XDG_CONFIG_HOME-to-X.patch
-Patch4:         0005-Own-a-bus-name-on-the-dbus-session-bus.patch
+Name: libaccounts-glib
+Version: 1.27
+Release: 1
+License: LGPLv2
+Summary: Accounts base library
+URL: https://gitlab.com/accounts-sso/libaccounts-glib
+Source0: %{name}-%{version}.tar.gz
+Source1: move_accounts_db_to_privileged
+Patch1: 0001-Compatibility-patch-for-check-0.9.8.patch
+Patch2: 0002-Disable-docs.patch
+Patch3: 0003-Support-moving-of-database-from-XDG_CONFIG_HOME-to-X.patch
+Patch4: 0004-Own-a-bus-name-on-the-dbus-session-bus.patch
+
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(dbus-glib-1)
@@ -63,7 +63,7 @@ This package contains tests for %{name}.
 
 %build
 # not needing the python stuff
-%meson -Dpy-overrides-dir=/usr/removeme \
+%meson \
     -Denable-datadir=true \
     -Ddatabase-dir="system/privileged/Accounts/libaccounts-glib" \
     -Dprivileged-dir="system/privileged"
@@ -71,7 +71,6 @@ This package contains tests for %{name}.
 
 %install
 %meson_install
-rm -r %{buildroot}/usr/removeme
 rm -r %{buildroot}%{_libdir}/girepository-1.0
 rm -r %{buildroot}%{_datadir}/dbus-1
 rm -r %{buildroot}%{_datadir}/gettext
@@ -104,21 +103,18 @@ fi
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(-,root,root,-)
 %{_libdir}/libaccounts-glib.so.*
 %{_datadir}/xml/accounts/schema/*
 %license COPYING
 %{_oneshotdir}/move_accounts_db_to_privileged
 
 %files devel
-%defattr(-,root,root,-)
 %{_includedir}/libaccounts-glib/*.h
 %{_libdir}/libaccounts-glib.so
 %{_libdir}/pkgconfig/libaccounts-glib.pc
 %exclude %{_datadir}/vala
 
 %files tools
-%defattr(-,root,root,-)
 %{_bindir}/ag-tool
 %{_bindir}/ag-backup
 
