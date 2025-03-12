@@ -5,10 +5,9 @@ License: LGPLv2
 Summary: Accounts base library
 URL: https://gitlab.com/accounts-sso/libaccounts-glib
 Source0: %{name}-%{version}.tar.gz
-Patch1: 0001-Compatibility-patch-for-check-0.9.8.patch
-Patch2: 0002-Disable-docs.patch
-Patch3: 0003-Support-moving-of-database-from-XDG_CONFIG_HOME-to-X.patch
-Patch4: 0004-Own-a-bus-name-on-the-dbus-session-bus.patch
+Patch1: 0001-Disable-docs.patch
+Patch2: 0002-Support-moving-of-database-from-XDG_CONFIG_HOME-to-X.patch
+Patch3: 0003-Own-a-bus-name-on-the-dbus-session-bus.patch
 
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
