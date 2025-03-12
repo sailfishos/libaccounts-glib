@@ -5,7 +5,6 @@ License: LGPLv2
 Summary: Accounts base library
 URL: https://gitlab.com/accounts-sso/libaccounts-glib
 Source0: %{name}-%{version}.tar.gz
-Source1: move_accounts_db_to_privileged
 Patch1: 0001-Compatibility-patch-for-check-0.9.8.patch
 Patch2: 0002-Disable-docs.patch
 Patch3: 0003-Support-moving-of-database-from-XDG_CONFIG_HOME-to-X.patch
@@ -26,9 +25,6 @@ BuildRequires:  meson
 BuildRequires:  vala-tools
 BuildRequires:  python3-gobject
 BuildRequires:  ninja
-BuildRequires:  oneshot >= 0.6.3
-Requires:  oneshot >= 0.6.3
-%{_oneshot_requires_post}
 
 %description
 %{summary}.
@@ -75,30 +71,8 @@ rm -r %{buildroot}%{_libdir}/girepository-1.0
 rm -r %{buildroot}%{_datadir}/dbus-1
 rm -r %{buildroot}%{_datadir}/gettext
 rm -r %{buildroot}%{_datadir}/gir-1.0
-mkdir -p %{buildroot}/%{_oneshotdir}
-cp -a %SOURCE1 %{buildroot}/%{_oneshotdir}
-chmod +x %{buildroot}/%{_oneshotdir}/*
 
-%post
-/sbin/ldconfig
-if [ "$1" -eq 2 ]; then
-# true when run during a package upgrade
-%{_bindir}/add-oneshot --late --all-users --privileged move_accounts_db_to_privileged
-
-# add redirect file only if it's needed
-USERS=$(getent group users | cut -d ":" -f 4 | tr "," "\n")
-for u in $USERS; do
-    UHOME=$(getent passwd $u | cut -d: -f6)
-    FOLDERBASE=$UHOME/.local/share/system/privileged/Accounts
-    FOLDER=$FOLDERBASE/libaccounts-glib
-    if [ ! -f "$FOLDER/accounts.db" ]; then
-        mkdir -p $FOLDER
-        echo "../../../../../../.config/libaccounts-glib" > $FOLDER/accounts.redirect
-        chown -R $u:privileged $FOLDERBASE
-    fi
-done
-
-fi
+%post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
@@ -106,7 +80,6 @@ fi
 %{_libdir}/libaccounts-glib.so.*
 %{_datadir}/xml/accounts/schema/*
 %license COPYING
-%{_oneshotdir}/move_accounts_db_to_privileged
 
 %files devel
 %{_includedir}/libaccounts-glib/*.h
@@ -117,4 +90,3 @@ fi
 %files tools
 %{_bindir}/ag-tool
 %{_bindir}/ag-backup
-
