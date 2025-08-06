@@ -29,7 +29,7 @@ groups settings are strict enough to prevent the unpriveleged nemo user
  4 files changed, 142 insertions(+), 11 deletions(-)
 
 diff --git a/libaccounts-glib/ag-manager.c b/libaccounts-glib/ag-manager.c
-index a9136e6..11ae7aa 100644
+index 03d7c1a..0c1261d 100644
 --- a/libaccounts-glib/ag-manager.c
 +++ b/libaccounts-glib/ag-manager.c
 @@ -60,6 +60,7 @@
@@ -56,7 +56,7 @@ index a9136e6..11ae7aa 100644
  enum
  {
      PROP_0,
-@@ -1339,12 +1349,49 @@ file_is_read_only (const gchar *filename)
+@@ -1337,12 +1347,49 @@ file_is_read_only (const gchar *filename)
      return FALSE;
  }
  
@@ -100,14 +100,14 @@ index a9136e6..11ae7aa 100644
  static gboolean
  open_db (AgManager *manager)
  {
-     AgManagerPrivate *priv = manager->priv;
+     AgManagerPrivate *priv = ag_manager_get_instance_private (manager);
      const gchar *basedir;
 -    gchar *filename, *pathname;
 +    gchar *filename, *pathname, *checkpath, *contents, *redirect;
      gint version;
      gboolean ok = TRUE;
      int ret, flags;
-@@ -1352,9 +1399,36 @@ open_db (AgManager *manager)
+@@ -1350,9 +1397,36 @@ open_db (AgManager *manager)
      basedir = g_getenv ("ACCOUNTS");
      if (G_LIKELY (!basedir))
      {
@@ -146,10 +146,10 @@ index a9136e6..11ae7aa 100644
              g_warning ("Cannot create directory: %s", pathname);
          filename = g_build_filename (pathname, "accounts.db", NULL);
 diff --git a/meson.build b/meson.build
-index 0f27b27..0fdc3b0 100644
+index 705d525..80ccedd 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -19,7 +19,18 @@ application_files_dir = 'accounts/applications'
+@@ -23,7 +23,18 @@ application_files_dir = 'accounts/applications'
  provider_files_dir = 'accounts/providers'
  service_files_dir = 'accounts/services'
  service_type_files_dir = 'accounts/service_types'
@@ -167,11 +167,11 @@ index 0f27b27..0fdc3b0 100644
 +    add_global_arguments('-DDATABASE_BASE_DIR="'+ database_base_dir + '"', language : 'c')
 +endif
  
- add_project_arguments('-DAPPLICATION_FILES_DIR="'+ application_files_dir + '"', language : 'c')
- add_project_arguments('-DPROVIDER_FILES_DIR="'+ provider_files_dir + '"', language : 'c')
-@@ -27,6 +38,11 @@ add_project_arguments('-DSERVICE_FILES_DIR="'+ service_files_dir + '"', language
- add_project_arguments('-DSERVICE_TYPE_FILES_DIR="'+ service_type_files_dir + '"', language : 'c')
- add_project_arguments('-DDATABASE_DIR="'+ database_dir + '"', language : 'c')
+ add_project_arguments(
+     '-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_@0@_@1@'.format(glib_major_req, glib_minor_req),
+@@ -35,6 +46,11 @@ add_project_arguments(
+     '-DDATABASE_DIR="'+ database_dir + '"',
+ language : 'c')
  
 +enable_datadir = get_option('enable-datadir')
 +if enable_datadir == true
@@ -182,12 +182,13 @@ index 0f27b27..0fdc3b0 100644
  
  xmllint = find_program('xmllint', required: false)
 diff --git a/meson_options.txt b/meson_options.txt
-index 44161de..fe72c85 100644
+index 2afb065..9925e84 100644
 --- a/meson_options.txt
 +++ b/meson_options.txt
-@@ -1,2 +1,6 @@
- option('install-py-overrides', type: 'boolean', value: false, description: 'Install Python gi overrides file')
- option('py-overrides-dir', type : 'string', value : '', description: 'Path to pygobject overrides directory')
+@@ -3,3 +3,7 @@ option('py-overrides-dir', type : 'string', value : '', description: 'Path to py
+ option('introspection', type : 'boolean', value : true, description: 'Install gobject and vapi introspection data')
+ option('docs', type : 'boolean', value : true, description: 'Install documentation')
+ option('tests', type : 'boolean', value : true, description: 'Build and run tests')
 +option('database-dir', type : 'string', value : '', description: 'Directory for storing database (in $XDG_CONFIG_HOME)')
 +option('database-base-dir', type : 'string', value : '', description: 'Provide a fixed database base directory [default=$XDG_CONFIG_HOME]')
 +option('privileged-dir', type : 'string', value : '', description: 'Directory tested for special permissions (in $XDG_CONFIG_HOME)')

@@ -3,11 +3,11 @@ Version: 1.27
 Release: 1
 License: LGPLv2
 Summary: Accounts base library
-URL: https://gitlab.com/accounts-sso/libaccounts-glib
+URL: https://github.com/sailfishos/libaccounts-glib
 Source0: %{name}-%{version}.tar.gz
-Patch1: 0001-Disable-docs.patch
-Patch2: 0002-Support-moving-of-database-from-XDG_CONFIG_HOME-to-X.patch
-Patch3: 0003-Own-a-bus-name-on-the-dbus-session-bus.patch
+Patch1: 0001-Support-moving-of-database-from-XDG_CONFIG_HOME-to-X.patch
+Patch2: 0002-Own-a-bus-name-on-the-dbus-session-bus.patch
+Patch3: 0003-Update-both-flag-and-key-values-if-key-values-exist.patch
 
 BuildRequires:  pkgconfig(check) >= 0.9.4
 BuildRequires:  pkgconfig(dbus-1)
@@ -59,6 +59,7 @@ This package contains tests for %{name}.
 %build
 # not needing the python stuff
 %meson \
+    -Ddocs=false \
     -Denable-datadir=true \
     -Ddatabase-dir="system/privileged/Accounts/libaccounts-glib" \
     -Dprivileged-dir="system/privileged"

@@ -18,7 +18,7 @@ where * is replaced by a randomly generated uuid.
  2 files changed, 33 insertions(+)
 
 diff --git a/libaccounts-glib/ag-internals.h b/libaccounts-glib/ag-internals.h
-index efad38c..5dba0fd 100644
+index c356a39..6594fa0 100644
 --- a/libaccounts-glib/ag-internals.h
 +++ b/libaccounts-glib/ag-internals.h
 @@ -41,6 +41,7 @@ G_BEGIN_DECLS
@@ -30,7 +30,7 @@ index efad38c..5dba0fd 100644
  #define SERVICE_GLOBAL_TYPE "global"
  #define AG_DBUS_PATH_SERVICE_GLOBAL \
 diff --git a/libaccounts-glib/ag-manager.c b/libaccounts-glib/ag-manager.c
-index 11ae7aa..a28a497 100644
+index 0c1261d..2757474 100644
 --- a/libaccounts-glib/ag-manager.c
 +++ b/libaccounts-glib/ag-manager.c
 @@ -148,6 +148,9 @@ struct _AgManagerPrivate {
@@ -43,7 +43,7 @@ index 11ae7aa..a28a497 100644
  };
  
  typedef struct {
-@@ -1547,6 +1550,23 @@ setup_dbus (AgManager *manager, GError **error)
+@@ -1545,6 +1548,23 @@ setup_dbus (AgManager *manager, GError **error)
          return FALSE;
      }
  
@@ -67,7 +67,7 @@ index 11ae7aa..a28a497 100644
      if (priv->service_type == NULL)
      {
          /* listen to all changes */
-@@ -1661,6 +1681,18 @@ ag_manager_dispose (GObject *object)
+@@ -1656,6 +1676,18 @@ ag_manager_dispose (GObject *object)
  
      g_list_free_full (g_steal_pointer (&priv->locks), (GDestroyNotify)store_cb_data_free);
  

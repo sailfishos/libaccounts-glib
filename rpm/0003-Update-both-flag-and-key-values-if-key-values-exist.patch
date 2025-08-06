@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Pekka Vuorela <pekka.vuorela@jolla.com>
+Date: Wed, 16 Apr 2025 13:10:44 +0300
+Subject: [PATCH] Update both flag and key values if key values exist
+
+Had code doing account disabling by the "enabled" key value property.
+After that creating an account object and checking the states there was
+enabled flag false and "enabled" key value true.
+
+The properties seem a bit special by changing the flag from key value
+changes. But if just calling ag_account_set_enabled(), the
+key value property is just used as internal mechanism and filtered out.
+
+First tried just removing the related 'continue' statements, but that
+broke a couple unit tests which expect that only a fixed list of
+properties exist. Hence here updating the property if it's there but
+not inserting such if it doesn't.
+---
+ libaccounts-glib/ag-account.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/libaccounts-glib/ag-account.c b/libaccounts-glib/ag-account.c
+index be380e4..b47b610 100644
+--- a/libaccounts-glib/ag-account.c
++++ b/libaccounts-glib/ag-account.c
+@@ -641,7 +641,12 @@ update_settings (AgAccount *account, GHashTable *services)
+                         g_signal_emit (account, signals[DISPLAY_NAME_CHANGED], 0);
+                         g_object_notify_by_pspec ((GObject *)account,
+                                                   properties[PROP_DISPLAY_NAME]);
+-                        continue;
++                        /* special case keys are updated only if already
++                           existing in the properties */
++                        if (!g_hash_table_contains (ss->settings, key))
++                        {
++                            continue;
++                        }
+                     }
+                     else if (strcmp (key, "enabled") == 0)
+                     {
+@@ -653,7 +658,10 @@ update_settings (AgAccount *account, GHashTable *services)
+                         params->service_name = NULL;
+                         params->enabled = priv->enabled;
+                         enabled_signals = g_slist_prepend (enabled_signals, params);
+-                        continue;
++                        if (!g_hash_table_contains (ss->settings, key))
++                        {
++                            continue;
++                        }
+                     }
+                 }
+ 
